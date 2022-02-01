@@ -142,10 +142,10 @@ public class TasksArrayAdapterExpandable extends BaseExpandableListAdapter
         taskHolder.taskText.setText(taskItem.taskText);
         taskHolder.positionInList.setText(String.format("%d.",taskItem.positionInList));
 
-        if ((taskHolder.date != null) && (taskItem.dateAndTime != null))
+        if ((taskHolder.date != null) && (taskItem.getDate() != null))
         {
-            String simpleDate = new String(String.format("%s-%s",convertDateElement(taskItem.dateAndTime.get(Calendar.MONTH) + 1),
-                    convertDateElement(taskItem.dateAndTime.get(Calendar.DAY_OF_MONTH))));
+            String simpleDate = new String(String.format("%s-%s",convertDateElement(taskItem.getDate().get(Calendar.MONTH) + 1),
+                    convertDateElement(taskItem.getDate().get(Calendar.DAY_OF_MONTH))));
             taskHolder.date.setText(simpleDate);
         }
         else

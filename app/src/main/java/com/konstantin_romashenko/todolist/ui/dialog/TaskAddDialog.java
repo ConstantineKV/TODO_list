@@ -152,11 +152,10 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute)
     {
-        if (taskItem.getDateAndTime() == null)
-            return;
+        taskItem.setTime(Calendar.getInstance());
 
-        taskItem.getDateAndTime().set(Calendar.HOUR, hourOfDay);
-        taskItem.getDateAndTime().set(Calendar.MINUTE, minute);
+        taskItem.getDate().set(Calendar.HOUR, hourOfDay);
+        taskItem.getDate().set(Calendar.MINUTE, minute);
         taskItem.setDateSet(true);
         tvTimeValue.setText(String.format("%s:%s", convertDateElement(hourOfDay), convertDateElement(minute)));
     }
@@ -164,12 +163,11 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth)
     {
-        if (taskItem.getDateAndTime() == null)
-            taskItem.setDateAndTime(Calendar.getInstance());
+        taskItem.setDate(Calendar.getInstance());
 
-        taskItem.getDateAndTime().set(Calendar.YEAR, year);
-        taskItem.getDateAndTime().set(Calendar.MONTH, month + 1);
-        taskItem.getDateAndTime().set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        taskItem.getDate().set(Calendar.YEAR, year);
+        taskItem.getDate().set(Calendar.MONTH, month + 1);
+        taskItem.getDate().set(Calendar.DAY_OF_MONTH, dayOfMonth);
         taskItem.setDateSet(true);
         tvDateValue.setText(String.format("%s-%s-%s", year, convertDateElement(month), convertDateElement(dayOfMonth)));
         llTime.setEnabled(true);

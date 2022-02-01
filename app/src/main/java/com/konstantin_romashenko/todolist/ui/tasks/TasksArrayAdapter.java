@@ -52,12 +52,12 @@ public class TasksArrayAdapter extends ArrayAdapter<TaskItemClass>
         taskHolder.status.setChecked(taskItem.status);
         taskHolder.taskText.setText(taskItem.taskText);
         taskHolder.positionInList.setText(String.format("%d.",taskItem.positionInList));
-        int test = taskItem.dateAndTime.get(Calendar.MONTH);
+        int test = taskItem.getDate().get(Calendar.MONTH);
 
         if (taskHolder.date != null)
         {
-            String simpleDate = new String(String.format("%s-%s",convertDateElement(taskItem.dateAndTime.get(Calendar.MONTH) + 1),
-                convertDateElement(taskItem.dateAndTime.get(Calendar.DAY_OF_MONTH))));
+            String simpleDate = new String(String.format("%s-%s",convertDateElement(taskItem.getDate().get(Calendar.MONTH) + 1),
+                convertDateElement(taskItem.getDate().get(Calendar.DAY_OF_MONTH))));
             taskHolder.date.setText(simpleDate);
         }
         else

@@ -8,7 +8,11 @@ public class TaskItemClass
     Integer positionInList;
     String taskText;
     boolean status;
-    Calendar dateAndTime;
+    Calendar date;
+
+
+
+    Calendar time;
     boolean dateSet = false;
 
     public TaskItemClass()
@@ -62,13 +66,21 @@ public class TaskItemClass
         this.positionInList = positionInList;
     }
 
-    public Calendar getDateAndTime()
+    public Calendar getDate()
     {
-        return dateAndTime;
+        return date;
     }
-    public void setDateAndTime(Calendar dateAndTime)
+    public void setDate(Calendar date)
     {
-        this.dateAndTime = dateAndTime;
+        this.date = date;
         dateSet = true;
+    }
+
+    public Calendar getTime() {
+        return time;
+    }
+
+    public void setTime(Calendar time) {
+        this.time = time;
     }
 }

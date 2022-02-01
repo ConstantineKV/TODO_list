@@ -5,10 +5,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.konstantin_romashenko.todolist.ui.tasks.TaskItemClass;
 
@@ -16,8 +12,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 public class MyDBManager
 {
@@ -47,12 +41,19 @@ public class MyDBManager
         cv.put(MyConstants._ID, taskItem.getId());
         cv.put(MyConstants.POSITION_IN_LIST, taskItem.getPositionInList());
         cv.put(MyConstants.TASK_TEXT, taskItem.getTaskText());
-        if (taskItem.getDateAndTime() != null)
+        if (taskItem.getDate() != null)
         {
-            String dateString = new String();
-            dateString = fromCalendarToString(taskItem.getDateAndTime());
-            cv.put(MyConstants.DATE_AND_TIME, dateString);
+            String dateString;
+            dateString = fromCalendarToDateString(taskItem.getDate());
+            cv.put(MyConstants.DATE, dateString);
         }
+        if (taskItem.getTime() != null)
+        {
+            String timeString;
+            timeString = fromCalendarToTimeString(taskItem.getTime());
+            cv.put(MyConstants.TIME, timeString);
+        }
+
         cv.put(MyConstants.STATUS, taskItem.getStatus() ? 1 : 0);
         db.insert(MyConstants.TABLE_NAME, null, cv);
 
@@ -66,11 +67,11 @@ public class MyDBManager
         cv.put(MyConstants.STATUS, taskItem.getStatus() ? 1 : 0);
         cv.put(MyConstants.POSITION_IN_LIST, taskItem.getPositionInList());
 
-        if (taskItem.getDateAndTime() != null)
+        if (taskItem.getDate() != null)
         {
             String dateString = new String();
-            dateString = fromCalendarToString(taskItem.getDateAndTime());
-            cv.put(MyConstants.DATE_AND_TIME, dateString);
+            dateString = fromCalendarToDateString(taskItem.getDate());
+            cv.put(MyConstants.DATE, dateString);
         }
 
         db.update(MyConstants.TABLE_NAME, cv, "_id = ?", new String[] {Integer.toString(id)});
@@ -90,23 +91,29 @@ public class MyDBManager
             tempTaskItem.setStatus(tempStatus);
             tempTaskItem.setPositionInList(cursor.getInt(cursor.getColumnIndex(MyConstants.POSITION_IN_LIST)));
 
-            Calendar calendar = Calendar.getInstance();
-            calendar = fromStringToCalendar(cursor.getString(cursor.getColumnIndex(MyConstants.DATE_AND_TIME)));
-            tempTaskItem.setDateAndTime(calendar);
+            Calendar calendarDate;
+            calendarDate = fromDateStringToCalendar(cursor.getString(cursor.getColumnIndex(MyConstants.DATE)));
+            tempTaskItem.setDate(calendarDate);
+            Calendar calendarTime;
+            calendarTime = fromTimeStringToCalendar(cursor.getString(cursor.getColumnIndex(MyConstants.TIME)));
+            tempTaskItem.setTime(calendarTime);
+
             tasks.add(tempTaskItem);
         }
         cursor.close();
         return tasks;
     }
 
-    Calendar fromStringToCalendar(String strDate) throws ParseException
+
+
+    Calendar fromDateStringToCalendar(String strDate) throws ParseException
     {
         Calendar calendar;
 
         if (strDate != null)
         {
             calendar = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             calendar.setTime(sdf.parse(strDate));
             return calendar;
         }
@@ -116,11 +123,36 @@ public class MyDBManager
         }
     }
 
-    String fromCalendarToString(Calendar calendarDate)
+    Calendar fromTimeStringToCalendar(String strDate) throws ParseException
     {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Calendar calendar;
+
+        if (strDate != null)
+        {
+            calendar = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+            calendar.setTime(sdf.parse(strDate));
+            return calendar;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    String fromCalendarToDateString(Calendar calendarDate)
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(calendarDate.getTime());
     }
+
+    String fromCalendarToTimeString(Calendar calendarDate)
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        return sdf.format(calendarDate.getTime());
+    }
+
+
     void closeDB()
     {
         myDBHelper.close();

@@ -187,19 +187,19 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
 
         for (TaskItemClass task : taskItems)
         {
-            Calendar taskDate = task.dateAndTime;
+            Calendar taskDate = task.getDate();
 
             Calendar currentDate = Calendar.getInstance();
 
             if (task.status)
                 tasksByGroupsMap.get(TaskGroups.DONE).add(task);
-            else if (task.dateAndTime == null)
+            else if (task.getDate() == null)
                 tasksByGroupsMap.get(TaskGroups.FUTURE).add(task);
-            else if (equalOnlyDate(currentDate, task.dateAndTime))
+            else if (equalOnlyDate(currentDate, task.getDate()))
                 tasksByGroupsMap.get(TaskGroups.TODAY).add(task);
-            else if (currentDate.getTime().after(task.dateAndTime.getTime()))
+            else if (currentDate.getTime().after(task.getDate().getTime()))
                 tasksByGroupsMap.get(TaskGroups.PREVIOUS).add(task);
-            else if (currentDate.getTime().before(task.dateAndTime.getTime()))
+            else if (currentDate.getTime().before(task.getDate().getTime()))
                 tasksByGroupsMap.get(TaskGroups.FUTURE).add(task);
         }
 
@@ -276,6 +276,12 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
             return;
         }
 
+        taskAddDialog.setId(getFreeId());
+        taskAddDialog.show(fm, "Add new task");
+    }
+
+    int getFreeId()
+    {
         boolean idNotInList;
         Integer idToAdd = 0;
         do
@@ -292,16 +298,15 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
             }
         }
         while (idNotInList != true);
-
-        taskAddDialog.setId(idToAdd);
-        taskAddDialog.show(fm, "Add new task");
+        return idToAdd;
     }
-
     @Override
     public void onAddNewTaskClicked(TaskItemClass taskItem)
     {
         if (taskItem.getTaskText() == "")
             return;
+
+        taskItem.id = getFreeId();
 
         myDB.insertToDB(taskItem);
         tasks = getDataFromDb();
