@@ -4,12 +4,30 @@ import java.util.List;
 
 public class TasksGroup
 {
-    private List<TaskItemClass> taskItems;
-    private String              groupName;
-
-    TasksGroup(String groupName, List<TaskItemClass> taskItems)
+    enum TaskType
     {
-        this.groupName = groupName;
+        PREVIOUS(0),
+        TODAY(1),
+        FUTURE(2),
+        DONE(3);
+
+        private final int number;
+
+        private TaskType(int number)
+        {
+            this.number = number;
+        }
+
+        public int getValue()
+        {
+            return number;
+        }
+    }
+    private List<TaskItemClass> taskItems;
+    private TaskType groupType;
+    TasksGroup(TaskType taskType, List<TaskItemClass> taskItems)
+    {
+        this.groupType = taskType;
         this.taskItems = taskItems;
     }
     public List<TaskItemClass> getTaskItems()
@@ -22,13 +40,13 @@ public class TasksGroup
         this.taskItems = taskItems;
     }
 
-    public String getGroupName()
+    public TaskType getGroupType()
     {
-        return groupName;
+        return groupType;
     }
 
-    public void setGroupName(String groupName)
+    public void setGroupType(TaskType groupType)
     {
-        this.groupName = groupName;
+        this.groupType = groupType;
     }
 }

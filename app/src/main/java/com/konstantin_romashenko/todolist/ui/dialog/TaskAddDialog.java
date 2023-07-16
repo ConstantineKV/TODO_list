@@ -19,7 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
+import com.konstantin_romashenko.todolist.R;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -33,7 +33,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Calendar;
 
-public class TaskAddDialog extends DialogFragment implements View.OnClickListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener
+public class TaskAddDialog extends DialogFragment implements View.OnClickListener,
+        DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener
 {
     BottomSheetDialog bottomSheetDialog;
     TaskItemClass taskItem;
@@ -56,6 +57,7 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
         bottomSheetDialog.setTitle("New task");
         bottomSheetDialog.setContentView(R.layout.new_task_layout);
         taskItem = new TaskItemClass();
+        int test = R.id.fbAddTask;
 
     }
 
@@ -102,22 +104,23 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
     @Override
     public void onClick(View v)
     {
-        switch(v.getId())
+        if (v.getId() == R.id.fbAddTask)
         {
-            case R.id.fbAddTask:
-                onClickAddTask();
-                break;
-            case R.id.llDate:
-                onClickDateChoose();
-                break;
-            case R.id.llTime:
-                onClickTimeChoose();
-                break;
+            onClickAddTask();
+        }
+        if (v.getId() == R.id.llDate)
+        {
+            onClickDateChoose();
+        }
+        if (v.getId() == R.id.llTime)
+        {
+            onClickTimeChoose();
         }
     }
     
     public void onClickAddTask()
     {
+
         String taskText = edTaskText.getText().toString();
         if (taskText.equals(""))
         {
@@ -136,7 +139,10 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
     public void onClickDateChoose()
     {
         Calendar calendar = Calendar.getInstance();
-        datePickerDialog = new DatePickerDialog(getContext(), this, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+        datePickerDialog = new DatePickerDialog(getContext(),
+                this,
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
     }
@@ -166,10 +172,10 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
         taskItem.setDate(Calendar.getInstance());
 
         taskItem.getDate().set(Calendar.YEAR, year);
-        taskItem.getDate().set(Calendar.MONTH, month + 1);
+        taskItem.getDate().set(Calendar.MONTH, month);
         taskItem.getDate().set(Calendar.DAY_OF_MONTH, dayOfMonth);
         taskItem.setDateSet(true);
-        tvDateValue.setText(String.format("%s-%s-%s", year, convertDateElement(month), convertDateElement(dayOfMonth)));
+        tvDateValue.setText(String.format("%s-%s-%s", year, convertDateElement(month+1), convertDateElement(dayOfMonth)));
         llTime.setEnabled(true);
         tvTimeName.setEnabled(true);
         tvTimeValue.setEnabled(true);

@@ -1,6 +1,8 @@
 package com.konstantin_romashenko.todolist.ui.tasks;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -104,13 +106,14 @@ public class TasksArrayAdapterExpandable extends BaseExpandableListAdapter
                 groupHolder = (GroupHolder)convertView.getTag();
             }
 
-            groupHolder.tvGroupName.setText(tasksByGroups.get(groupPosition).getGroupName());
+            groupHolder.tvGroupName.setText(tasksByGroups.get(groupPosition).getGroupType().toString());
             convertView.setVisibility(View.VISIBLE);
         }
         else
             convertView.setVisibility(View.INVISIBLE);
         return convertView;
     }
+
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent)
@@ -140,7 +143,46 @@ public class TasksArrayAdapterExpandable extends BaseExpandableListAdapter
         taskHolder.id = taskItem.id;
         taskHolder.status.setChecked(taskItem.status);
         taskHolder.taskText.setText(taskItem.taskText);
-        taskHolder.positionInList.setText(String.format("%d.",taskItem.positionInList));
+        if (tasksByGroups.get(groupPosition).getGroupType() == TasksGroup.TaskType.PREVIOUS)
+        {
+            taskHolder.positionInList.setTextColor(taskHolder.positionInList.getResources().getColor(R.color.taskText));
+            taskHolder.taskText.setTextColor(taskHolder.taskText.getResources().getColor(R.color.taskText));
+            taskHolder.date.setTextColor(taskHolder.date.getResources().getColor(R.color.taskTextExpired));
+            taskHolder.taskText.setPaintFlags(taskHolder.taskText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+
+        }
+        else if (tasksByGroups.get(groupPosition).getGroupType() == TasksGroup.TaskType.TODAY)
+        {
+            taskHolder.positionInList.setTextColor(taskHolder.positionInList.getResources().getColor(R.color.taskText));
+            taskHolder.taskText.setTextColor(taskHolder.taskText.getResources().getColor(R.color.taskText));
+            taskHolder.date.setTextColor(taskHolder.date.getResources().getColor(R.color.taskText));
+            taskHolder.taskText.setPaintFlags(taskHolder.taskText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+        else if (tasksByGroups.get(groupPosition).getGroupType() == TasksGroup.TaskType.FUTURE)
+        {
+            taskHolder.positionInList.setTextColor(taskHolder.positionInList.getResources().getColor(R.color.taskText));
+            taskHolder.taskText.setTextColor(taskHolder.taskText.getResources().getColor(R.color.taskText));
+            taskHolder.date.setTextColor(taskHolder.date.getResources().getColor(R.color.taskText));
+            taskHolder.taskText.setPaintFlags(taskHolder.taskText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+        else if (tasksByGroups.get(groupPosition).getGroupType() == TasksGroup.TaskType.DONE)
+        {
+            taskHolder.positionInList.setTextColor(taskHolder.positionInList.getResources().getColor(R.color.taskTextDone));
+            taskHolder.taskText.setTextColor(taskHolder.taskText.getResources().getColor(R.color.taskTextDone));
+            taskHolder.date.setTextColor(taskHolder.date.getResources().getColor(R.color.taskTextDone));
+            taskHolder.taskText.setPaintFlags(taskHolder.taskText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+
+        if (tasksByGroups.get(groupPosition).getGroupType() != TasksGroup.TaskType.DONE)
+        {
+            taskHolder.positionInList.setVisibility(View.VISIBLE);
+            taskHolder.positionInList.setText(String.format("%d.",taskItem.positionInList));
+        }
+        else
+        {
+            taskHolder.positionInList.setVisibility(View.INVISIBLE);
+        }
+
 
         if ((taskHolder.date != null) && (taskItem.getDate() != null))
         {

@@ -8,4 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="task">#F0F6F0</color>
+    <color name="taskText">#FF000000</color>
+    <color name="taskTextExpired">#FFFF0000</color>
+    <color name="taskTextDone">#C1C1C1</color>
 </resources>

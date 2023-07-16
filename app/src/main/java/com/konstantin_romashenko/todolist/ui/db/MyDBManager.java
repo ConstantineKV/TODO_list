@@ -76,6 +76,14 @@ public class MyDBManager
 
         db.update(MyConstants.TABLE_NAME, cv, "_id = ?", new String[] {Integer.toString(id)});
     }
+
+    public void updateAllInDb(ArrayList<TaskItemClass> tasks) throws ParseException
+    {
+        for (TaskItemClass task : tasks)
+        {
+            updateInDB(task.getId(), task);
+        }
+    }
     @SuppressLint("Range")
     public ArrayList<TaskItemClass> getFromDB() throws ParseException
     {
