@@ -25,6 +25,7 @@ public class TasksGroup
     }
     private List<TaskItemClass> taskItems;
     private TaskType groupType;
+
     TasksGroup(TaskType taskType, List<TaskItemClass> taskItems)
     {
         this.groupType = taskType;
@@ -49,4 +50,5 @@ public class TasksGroup
     {
         this.groupType = groupType;
     }
+
 }

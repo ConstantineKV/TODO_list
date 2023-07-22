@@ -1,7 +1,5 @@
 package com.konstantin_romashenko.todolist.ui.dialog;
 
-import com.konstantin_romashenko.todolist.ui.tasks.TaskTreatmentListener;
-
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -26,11 +24,12 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.konstantin_romashenko.todolist.R;
 import com.konstantin_romashenko.todolist.ui.tasks.TaskItemClass;
+import com.konstantin_romashenko.todolist.ui.tasks.listeners.TaskAddListener;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.ParseException;
 import java.util.Calendar;
 
 public class TaskAddDialog extends DialogFragment implements View.OnClickListener,
@@ -45,12 +44,12 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
 
     TextView tvTimeName;
     TextView tvTimeValue;
-    TaskTreatmentListener listener;
+    TaskAddListener listener;
     DatePickerDialog datePickerDialog;
     TimePickerDialog timePickerDialog;
     LinearLayout llDate, llTime;
 
-    public TaskAddDialog(Context context, TaskTreatmentListener listener)
+    public TaskAddDialog(Context context, TaskAddListener listener)
     {
         this.listener = listener;
         bottomSheetDialog = new BottomSheetDialog(context);
@@ -106,7 +105,14 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
     {
         if (v.getId() == R.id.fbAddTask)
         {
-            onClickAddTask();
+            try
+            {
+                onClickAddTask();
+            }
+            catch (ParseException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
         if (v.getId() == R.id.llDate)
         {
@@ -118,8 +124,7 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
         }
     }
     
-    public void onClickAddTask()
-    {
+    public void onClickAddTask() throws ParseException {
 
         String taskText = edTaskText.getText().toString();
         if (taskText.equals(""))
@@ -160,8 +165,8 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
     {
         taskItem.setTime(Calendar.getInstance());
 
-        taskItem.getDate().set(Calendar.HOUR, hourOfDay);
-        taskItem.getDate().set(Calendar.MINUTE, minute);
+        taskItem.getTime().set(Calendar.HOUR_OF_DAY, hourOfDay);
+        taskItem.getTime().set(Calendar.MINUTE, minute);
         taskItem.setDateSet(true);
         tvTimeValue.setText(String.format("%s:%s", convertDateElement(hourOfDay), convertDateElement(minute)));
     }

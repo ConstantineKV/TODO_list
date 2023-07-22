@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mMarkAsDone"
+        android:title="@string/mark_as_done"
+        android:visible="true" />
+    <item
+        android:id="@+id/mMarkAsUndone"
+        android:gravity="center_vertical"
+        android:title="@string/mark_as_undone" />
+    <item
+        android:id="@+id/mDeleteTask"
+        android:gravity="center_vertical"
+        android:title="@string/delete_task" />
+</menu>

@@ -1,8 +1,9 @@
 package com.konstantin_romashenko.todolist.ui.tasks;
 
+import java.io.Serializable;
 import java.util.Calendar;
 
-public class TaskItemClass
+public class TaskItemClass implements Serializable
 {
     Integer id;
     Integer positionInList;

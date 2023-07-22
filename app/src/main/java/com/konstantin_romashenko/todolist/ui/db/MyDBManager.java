@@ -72,6 +72,13 @@ public class MyDBManager
             String dateString = new String();
             dateString = fromCalendarToDateString(taskItem.getDate());
             cv.put(MyConstants.DATE, dateString);
+
+        }
+        if (taskItem.getTime() != null)
+        {
+            String timeString = new String();
+            timeString = fromCalendarToTimeString(taskItem.getTime());
+            cv.put(MyConstants.TIME, timeString);
         }
 
         db.update(MyConstants.TABLE_NAME, cv, "_id = ?", new String[] {Integer.toString(id)});
@@ -112,7 +119,10 @@ public class MyDBManager
         return tasks;
     }
 
-
+    public void deleteInDb(Integer id)
+    {
+        db.delete(MyConstants.TABLE_NAME, "_id = ?", new String[] {Integer.toString(id)});
+    }
 
     Calendar fromDateStringToCalendar(String strDate) throws ParseException
     {

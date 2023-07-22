@@ -12,6 +12,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import com.konstantin_romashenko.todolist.ui.tasks.TasksFragment;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.konstantin_romashenko.todolist.R;
 
@@ -22,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
+import com.konstantin_romashenko.todolist.ui.tasks.listeners.TaskClickListener;
 public class TasksArrayAdapterExpandable extends BaseExpandableListAdapter
 {
     private LayoutInflater inflater;
@@ -127,6 +128,7 @@ public class TasksArrayAdapterExpandable extends BaseExpandableListAdapter
         {
             convertView = inflater.inflate(R.layout.list_view_item, null ,false);
             taskHolder = new TaskHolder();
+            taskHolder.layout = convertView.findViewById(R.id.clListViewItem);
             taskHolder.status = convertView.findViewById(R.id.cbStatus);
             taskHolder.configureListener();
             taskHolder.taskText = convertView.findViewById(R.id.tvTaskText);
@@ -229,13 +231,14 @@ public class TasksArrayAdapterExpandable extends BaseExpandableListAdapter
         TextView tvGroupName;
     }
 
-    private class TaskHolder implements CheckBox.OnClickListener
+    private class TaskHolder implements View.OnClickListener
     {
         int id;
         CheckBox status;
         TextView taskText;
         TextView positionInList;
         TextView date;
+        ConstraintLayout layout;
 
         TaskHolder()
         {
@@ -246,31 +249,42 @@ public class TasksArrayAdapterExpandable extends BaseExpandableListAdapter
         {
             if (status != null)
                 status.setOnClickListener(this);
+            if (layout != null)
+                layout.setOnClickListener(this);
         }
         @Override
         public void onClick(View v)
         {
-            CheckBox radioButton = (CheckBox)v;
-            if (radioButton.isChecked()) {
-                try
+            if (v.getId() == R.id.cbStatus)
+            {
+                CheckBox radioButton = (CheckBox)v;
+                if (radioButton.isChecked())
                 {
-                    taskClickListener.onTaskClicked(id,true);
+                    try
+                    {
+                        taskClickListener.onTaskClicked(id,true);
+                    }
+                    catch (ParseException | InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
-                catch (ParseException e)
+                else
                 {
-                    e.printStackTrace();
-                }
-            } else {
-                try
-                {
-                    taskClickListener.onTaskClicked(id,false);
-                }
-                catch (ParseException e)
-                {
-                    e.printStackTrace();
+                    try
+                    {
+                        taskClickListener.onTaskClicked(id,false);
+                    }
+                    catch (ParseException | InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
-
+            if (v.getId() == R.id.clListViewItem)
+            {
+                taskClickListener.onTaskLayoutClicked(id);
+            }
 
         }
     }

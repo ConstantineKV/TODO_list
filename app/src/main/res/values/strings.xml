@@ -3,4 +3,27 @@
     <string name="title_tasks">Tasks</string>
     <string name="title_calendar">Calendar</string>
     <string name="creating_empty_task">Please, enter the task text</string>
+    <string name="date_title">Date</string>
+    <string name="time_title">Time</string>
+    <string name="date_start_text">No</string>
+    <string name="time_start_text">No</string>
+    <string name="add_new_task">Add new task</string>
+    <string name="mark_as_done">Mark as done</string>
+    <string name="mark_as_undone">Mark as undone</string>
+    <string name="delete_task">Delete</string>
+    <string name="title_activity_edit_task">EditTaskActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>
