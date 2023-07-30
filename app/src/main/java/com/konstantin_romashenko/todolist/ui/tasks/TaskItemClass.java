@@ -1,5 +1,9 @@
 package com.konstantin_romashenko.todolist.ui.tasks;
 
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.konstantin_romashenko.todolist.ui.common.TasksCommon;
+
 import java.io.Serializable;
 import java.util.Calendar;
 
@@ -12,6 +16,8 @@ public class TaskItemClass implements Serializable
     Calendar date;
 
 
+
+    TasksCommon.TaskType taskType = TasksCommon.TaskType.TODAY;
 
     Calendar time;
     boolean dateSet = false;
@@ -83,5 +89,15 @@ public class TaskItemClass implements Serializable
 
     public void setTime(Calendar time) {
         this.time = time;
+    }
+
+    public TasksCommon.TaskType getTaskType()
+    {
+        return taskType;
+    }
+
+    public void setTaskType(TasksCommon.TaskType taskType)
+    {
+        this.taskType = taskType;
     }
 }

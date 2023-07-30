@@ -15,6 +15,8 @@ import java.util.Calendar;
 
 public class MyDBManager
 {
+
+    //private static MyDBManager myDBManager;
     private Context context;
     private MyDBHelper myDBHelper;
     private SQLiteDatabase db;
@@ -119,6 +121,45 @@ public class MyDBManager
         return tasks;
     }
 
+
+    @SuppressLint("Range")
+    public ArrayList<TaskItemClass> getFromDBbyCalendar(Calendar[] calendars) throws ParseException
+    {
+        ArrayList<String> dateStrings = new ArrayList<String>();
+        String selection = "date = ?";
+        for (int i = 0; i < calendars.length; ++i)
+        {
+            if (calendars[i] == null)
+                selection = "date IS NULL OR date = ?";
+            else
+                dateStrings.add(fromCalendarToDateString(calendars[i]));
+        }
+
+        ArrayList<TaskItemClass> tasks = new ArrayList<>();
+        Cursor cursor = db.query(MyConstants.TABLE_NAME, (String[]) null, selection, dateStrings.toArray(new String[0]),
+                null, null, null);
+        while (cursor.moveToNext())
+        {
+            TaskItemClass tempTaskItem = new TaskItemClass();
+            tempTaskItem.setId(cursor.getInt(cursor.getColumnIndex(MyConstants._ID)));
+            tempTaskItem.setTaskText(cursor.getString(cursor.getColumnIndex(MyConstants.TASK_TEXT)));
+            boolean tempStatus = cursor.getInt(cursor.getColumnIndex(MyConstants.STATUS)) > 0 ? true : false;
+            tempTaskItem.setStatus(tempStatus);
+            tempTaskItem.setPositionInList(cursor.getInt(cursor.getColumnIndex(MyConstants.POSITION_IN_LIST)));
+
+            Calendar calendarDate;
+            calendarDate = fromDateStringToCalendar(cursor.getString(cursor.getColumnIndex(MyConstants.DATE)));
+            tempTaskItem.setDate(calendarDate);
+            Calendar calendarTime;
+            calendarTime = fromTimeStringToCalendar(cursor.getString(cursor.getColumnIndex(MyConstants.TIME)));
+            tempTaskItem.setTime(calendarTime);
+
+            tasks.add(tempTaskItem);
+        }
+        cursor.close();
+        return tasks;
+    }
+
     public void deleteInDb(Integer id)
     {
         db.delete(MyConstants.TABLE_NAME, "_id = ?", new String[] {Integer.toString(id)});
@@ -171,8 +212,17 @@ public class MyDBManager
     }
 
 
-    void closeDB()
+    public void closeDB()
     {
         myDBHelper.close();
     }
+
+    /*
+    public static MyDBManager getInstante()
+    {
+        if (myDBManager == null)
+        {
+            myDBManager = new MyDBManager(this.context);
+        }
+    }*/
 }

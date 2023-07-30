@@ -1,5 +1,9 @@
 package com.konstantin_romashenko.todolist.ui.tasks;
 
+import static com.konstantin_romashenko.todolist.ui.common.CalendarCommon.equalOnlyDate;
+import static com.konstantin_romashenko.todolist.ui.common.TasksCommon.checkAndSortTasks;
+import static com.konstantin_romashenko.todolist.ui.common.TasksCommon.sortTasks;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -26,6 +30,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.konstantin_romashenko.todolist.R;
 import com.konstantin_romashenko.todolist.databinding.FragmentTasksBinding;
+import com.konstantin_romashenko.todolist.ui.common.TasksCommon;
 import com.konstantin_romashenko.todolist.ui.db.MyDBManager;
 import com.konstantin_romashenko.todolist.ui.dialog.TaskAddDialog;
 
@@ -71,7 +76,7 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
     class GroupExpandedInfo
     {
         public boolean expanded = false;
-        public TasksGroup.TaskType taskType = TasksGroup.TaskType.PREVIOUS;
+        public TasksCommon.TaskType taskType = TasksCommon.TaskType.PREVIOUS;
     };
     ActivityResultLauncher<Intent> mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -136,7 +141,7 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
         for (int i = 0; i < tasksByGroups.size(); ++i)
         {
             TasksGroup tasksGroup = tasksByGroups.get(i);
-            if (tasksGroup.getGroupType() == TasksGroup.TaskType.TODAY)
+            if (tasksGroup.getGroupType() == TasksCommon.TaskType.TODAY)
                 todayGroupIndex = i;
         }
         if (todayGroupIndex != -1)
@@ -256,15 +261,7 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
         }
         return false;
     }
-    boolean equalOnlyDate(Calendar first_cal, Calendar second_cal)
-    {
-        if ((first_cal.getTime().getDate() == second_cal.getTime().getDate()) &&
-           (first_cal.getTime().getMonth() == second_cal.getTime().getMonth()) &&
-           (first_cal.getTime().getYear() == second_cal.getTime().getYear()))
-            return true;
-        else
-            return false;
-    }
+
     @Override
     public void onDestroyView()
     {
@@ -273,15 +270,21 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
         binding = null;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+    }
+
     public void tasksToGroups(ArrayList<TaskItemClass> taskItems, Vector<TasksGroup> tasksByGroups)
     {
-        Map<TasksGroup.TaskType, List<TaskItemClass>> tasksByGroupsMap = new HashMap<>();
+        Map<TasksCommon.TaskType, List<TaskItemClass>> tasksByGroupsMap = new HashMap<>();
 
         tasksByGroupsMap.clear();
-        tasksByGroupsMap.put(TasksGroup.TaskType.DONE, new ArrayList<>());
-        tasksByGroupsMap.put(TasksGroup.TaskType.FUTURE, new ArrayList<>());
-        tasksByGroupsMap.put(TasksGroup.TaskType.TODAY, new ArrayList<>());
-        tasksByGroupsMap.put(TasksGroup.TaskType.PREVIOUS, new ArrayList<>());
+        tasksByGroupsMap.put(TasksCommon.TaskType.DONE, new ArrayList<>());
+        tasksByGroupsMap.put(TasksCommon.TaskType.FUTURE, new ArrayList<>());
+        tasksByGroupsMap.put(TasksCommon.TaskType.TODAY, new ArrayList<>());
+        tasksByGroupsMap.put(TasksCommon.TaskType.PREVIOUS, new ArrayList<>());
 
         for (TaskItemClass task : taskItems)
         {
@@ -290,60 +293,35 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
             Calendar currentDate = Calendar.getInstance();
 
             if (task.status)
-                tasksByGroupsMap.get(TasksGroup.TaskType.DONE).add(task);
+                tasksByGroupsMap.get(TasksCommon.TaskType.DONE).add(task);
             else if (task.getDate() == null)
-                tasksByGroupsMap.get(TasksGroup.TaskType.TODAY).add(task);
+                tasksByGroupsMap.get(TasksCommon.TaskType.TODAY).add(task);
             else if (equalOnlyDate(currentDate, task.getDate()))
-                tasksByGroupsMap.get(TasksGroup.TaskType.TODAY).add(task);
+                tasksByGroupsMap.get(TasksCommon.TaskType.TODAY).add(task);
             else if (currentDate.getTime().after(task.getDate().getTime()))
-                tasksByGroupsMap.get(TasksGroup.TaskType.PREVIOUS).add(task);
+                tasksByGroupsMap.get(TasksCommon.TaskType.PREVIOUS).add(task);
             else if (currentDate.getTime().before(task.getDate().getTime()))
-                tasksByGroupsMap.get(TasksGroup.TaskType.FUTURE).add(task);
+                tasksByGroupsMap.get(TasksCommon.TaskType.FUTURE).add(task);
         }
 
-        checkAndSortTasks(tasksByGroupsMap, TasksGroup.TaskType.PREVIOUS);
-        checkAndSortTasks(tasksByGroupsMap, TasksGroup.TaskType.TODAY);
-        checkAndSortTasks(tasksByGroupsMap, TasksGroup.TaskType.FUTURE);
-        checkAndSortTasks(tasksByGroupsMap, TasksGroup.TaskType.DONE);
+        checkAndSortTasks(tasksByGroupsMap, TasksCommon.TaskType.PREVIOUS);
+        checkAndSortTasks(tasksByGroupsMap, TasksCommon.TaskType.TODAY);
+        checkAndSortTasks(tasksByGroupsMap, TasksCommon.TaskType.FUTURE);
+        checkAndSortTasks(tasksByGroupsMap, TasksCommon.TaskType.DONE);
 
         tasksByGroups.clear();
-        if (!tasksByGroupsMap.get(TasksGroup.TaskType.PREVIOUS).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksGroup.TaskType.PREVIOUS, tasksByGroupsMap.get(TasksGroup.TaskType.PREVIOUS)));
-        if (!tasksByGroupsMap.get(TasksGroup.TaskType.TODAY).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksGroup.TaskType.TODAY, tasksByGroupsMap.get(TasksGroup.TaskType.TODAY)));
-        if (!tasksByGroupsMap.get(TasksGroup.TaskType.FUTURE).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksGroup.TaskType.FUTURE, tasksByGroupsMap.get(TasksGroup.TaskType.FUTURE)));
-        if (!tasksByGroupsMap.get(TasksGroup.TaskType.DONE).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksGroup.TaskType.DONE, tasksByGroupsMap.get(TasksGroup.TaskType.DONE)));
+        if (!tasksByGroupsMap.get(TasksCommon.TaskType.PREVIOUS).isEmpty())
+            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.PREVIOUS, tasksByGroupsMap.get(TasksCommon.TaskType.PREVIOUS)));
+        if (!tasksByGroupsMap.get(TasksCommon.TaskType.TODAY).isEmpty())
+            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.TODAY, tasksByGroupsMap.get(TasksCommon.TaskType.TODAY)));
+        if (!tasksByGroupsMap.get(TasksCommon.TaskType.FUTURE).isEmpty())
+            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.FUTURE, tasksByGroupsMap.get(TasksCommon.TaskType.FUTURE)));
+        if (!tasksByGroupsMap.get(TasksCommon.TaskType.DONE).isEmpty())
+            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.DONE, tasksByGroupsMap.get(TasksCommon.TaskType.DONE)));
 
     }
 
-    void checkAndSortTasks(Map<TasksGroup.TaskType, List<TaskItemClass>> tasksByGroups, TasksGroup.TaskType taskType)
-    {
-        if (!tasksByGroups.get(taskType).isEmpty())
-            sortTasks(tasksByGroups.get(taskType));
-    }
 
-    void sortTasks(List<TaskItemClass> taskGroup)
-    {
-        taskGroup.sort(new Comparator<TaskItemClass>()
-        {
-            @Override
-            public int compare(TaskItemClass o1, TaskItemClass o2)
-            {
-                Calendar o1date = o1.getDate() != null? o1.getDate() : Calendar.getInstance();
-                Calendar o2date = o2.getDate() != null? o2.getDate() : Calendar.getInstance();
-                if (equalOnlyDate(o1date, o2date))
-                {
-                    return (o1.positionInList > o2.positionInList) ? 1 : -1;
-                }
-                if (o1date.after(o2date))
-                    return 1;
-                else
-                    return -1;
-            }
-        });
-    }
     @Override
     public void onClick(View v)
     {

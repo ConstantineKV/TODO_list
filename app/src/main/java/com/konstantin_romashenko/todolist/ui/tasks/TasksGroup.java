@@ -1,32 +1,17 @@
 package com.konstantin_romashenko.todolist.ui.tasks;
 
+import com.konstantin_romashenko.todolist.ui.common.TasksCommon;
+
 import java.util.List;
 
 public class TasksGroup
 {
-    enum TaskType
-    {
-        PREVIOUS(0),
-        TODAY(1),
-        FUTURE(2),
-        DONE(3);
 
-        private final int number;
-
-        private TaskType(int number)
-        {
-            this.number = number;
-        }
-
-        public int getValue()
-        {
-            return number;
-        }
-    }
+    public static TasksCommon.TaskType TaskType;
     private List<TaskItemClass> taskItems;
-    private TaskType groupType;
+    private TasksCommon.TaskType groupType;
 
-    TasksGroup(TaskType taskType, List<TaskItemClass> taskItems)
+    TasksGroup(TasksCommon.TaskType taskType, List<TaskItemClass> taskItems)
     {
         this.groupType = taskType;
         this.taskItems = taskItems;
@@ -41,12 +26,12 @@ public class TasksGroup
         this.taskItems = taskItems;
     }
 
-    public TaskType getGroupType()
+    public TasksCommon.TaskType getGroupType()
     {
         return groupType;
     }
 
-    public void setGroupType(TaskType groupType)
+    public void setGroupType(TasksCommon.TaskType groupType)
     {
         this.groupType = groupType;
     }

@@ -77,7 +77,7 @@ public class TasksArrayAdapter extends ArrayAdapter<TaskItemClass>
             return new String(String.valueOf(dateElement));
         return new String("");
     }
-    private class TaskHolder
+    public class TaskHolder
     {
         RadioButton status;
         TextView taskText;
