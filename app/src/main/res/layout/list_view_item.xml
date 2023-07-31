@@ -5,14 +5,17 @@
     android:id="@+id/clListViewItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/task">
+    android:layout_marginBottom="5dp"
+    android:background="@color/task"
+    android:paddingBottom="10dp">
 
     <TextView
         android:id="@+id/tvPositionInList"
-        android:layout_width="24dp"
-        android:layout_height="30dp"
+        android:layout_width="17dp"
+        android:layout_height="32dp"
+        android:gravity="center_vertical"
         android:text="1."
-        android:textSize="20sp"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/tvTaskText"
         app:layout_constraintStart_toEndOf="@+id/cbStatus"
         app:layout_constraintTop_toTopOf="@+id/tvTaskText"
@@ -20,14 +23,16 @@
 
     <TextView
         android:id="@+id/tvTaskText"
-        android:layout_width="256dp"
-        android:layout_height="32dp"
+        android:layout_width="316dp"
+        android:layout_height="30dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="76dp"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
         android:text="TaskText"
-        android:textSize="20sp"
+        android:textAlignment="gravity"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/tvPositionInList"
         app:layout_constraintTop_toTopOf="parent" />
 

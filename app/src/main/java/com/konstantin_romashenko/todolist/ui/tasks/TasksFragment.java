@@ -10,6 +10,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,6 +75,7 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
     private Vector<TasksGroup> tasksByGroups = new Vector<TasksGroup>();
     private TaskTreatmentListenerImpl taskTreatmentListener;
     public boolean[] expanded;
+    private Handler handler = new Handler(Looper.getMainLooper());
     class GroupExpandedInfo
     {
         public boolean expanded = false;
@@ -408,6 +411,20 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
         refreshDataFromDb();
     }
 
+    class TaskCheckedDaemon implements Runnable
+    {
+        TasksFragment tasksFragment;
+        TaskCheckedDaemon(TasksFragment tasksFragment)
+        {
+            super();
+            this.tasksFragment = tasksFragment;
+        }
+        @Override
+        public void run()
+        {
+            tasksFragment.refreshDataFromDb();
+        }
+    }
     @Override
     public void onTaskClicked(Integer id, boolean checkedStatus) throws ParseException, InterruptedException
     {
@@ -416,10 +433,12 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
             if (task.id == id)
             {
                 task.status = checkedStatus;
+
                 myDB.updateInDB(id, task);
             }
         }
-        refreshDataFromDb();
+        handler.postDelayed(new TaskCheckedDaemon(this), 500);
+
     }
 
     @Override

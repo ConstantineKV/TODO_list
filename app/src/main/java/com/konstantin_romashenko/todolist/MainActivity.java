@@ -41,10 +41,12 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        androidx.appcompat.app.ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
+        //androidx.appcompat.app.ActionBar actionBar = getSupportActionBar();
+        //actionBar.hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //getWindow().setFlags(android.R.style.Theme_Material_NoActionBar_Fullscreen,
+        //        android.R.style.Theme_Material_NoActionBar_Fullscreen);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -54,7 +56,7 @@ public class MainActivity extends AppCompatActivity
                 R.id.navigation_tasks, R.id.navigation_calendar)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
     }
