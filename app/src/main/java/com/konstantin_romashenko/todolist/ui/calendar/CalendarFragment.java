@@ -17,23 +17,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.konstantin_romashenko.todolist.R;
 import com.konstantin_romashenko.todolist.databinding.FragmentCalendarBinding;
-import com.konstantin_romashenko.todolist.ui.calendar.CalendarViewModel;
+
 import com.konstantin_romashenko.todolist.ui.common.TasksCommon;
 import com.konstantin_romashenko.todolist.ui.db.MyDBManager;
 import com.konstantin_romashenko.todolist.ui.tasks.TaskItemClass;
-import com.konstantin_romashenko.todolist.ui.tasks.TasksArrayAdapterExpandable;
-import com.konstantin_romashenko.todolist.ui.tasks.TasksGroup;
 
 import org.jetbrains.annotations.NotNull;
 import android.widget.CalendarView;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
-import kotlinx.coroutines.scheduling.Task;
 
 
 public class CalendarFragment extends Fragment implements CalendarView.OnDateChangeListener
@@ -64,7 +59,7 @@ public class CalendarFragment extends Fragment implements CalendarView.OnDateCha
         super.onViewCreated(view, savedInstanceState);
         calendarView = getView().findViewById(R.id.cvTaskCalendar);
         calendarView.setOnDateChangeListener(this);
-        tasksRecyclerView = getView().findViewById(R.id.rvTasks);
+        tasksRecyclerView = getView().findViewById(R.id.rvTasksCalendar);
         tasksRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         myDB = new MyDBManager(getActivity().getApplicationContext());

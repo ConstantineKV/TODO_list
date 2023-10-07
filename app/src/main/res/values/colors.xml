@@ -11,4 +11,6 @@
     <color name="taskText">#FF000000</color>
     <color name="taskTextExpired">#FFFF0000</color>
     <color name="taskTextDone">#C1C1C1</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="transparent">#00FFFFFF</color>
 </resources>

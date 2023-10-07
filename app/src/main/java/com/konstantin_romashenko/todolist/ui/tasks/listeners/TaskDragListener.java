@@ -4,12 +4,9 @@ import android.view.DragEvent;
 import android.view.View;
 import android.widget.ExpandableListView;
 
-public class TaskDragListener implements View.OnDragListener
-{
-    @Override
-    public boolean onDrag(View v, DragEvent event)
-    {
+import java.text.ParseException;
 
-        return false;
-    }
+public interface TaskDragListener
+{
+    public void onDragFinished() throws ParseException;
 }

@@ -1,10 +1,14 @@
 package com.konstantin_romashenko.todolist.ui.db;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
+
+import com.konstantin_romashenko.todolist.ui.tasks.TaskItemClass;
 
 public class MyDBHelper extends SQLiteOpenHelper
 {
@@ -25,4 +29,6 @@ public class MyDBHelper extends SQLiteOpenHelper
         db.execSQL(MyConstants.DROP_TABLE);
         onCreate(db);
     }
+
+
 }

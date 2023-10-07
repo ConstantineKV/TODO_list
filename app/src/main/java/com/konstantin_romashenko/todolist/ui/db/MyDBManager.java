@@ -25,6 +25,7 @@ public class MyDBManager
     {
         this.context = context;
         myDBHelper = new MyDBHelper(context);
+
     }
 
     public void openDB()
@@ -217,6 +218,7 @@ public class MyDBManager
         myDBHelper.close();
     }
 
+
     /*
     public static MyDBManager getInstante()
     {
@@ -225,4 +227,6 @@ public class MyDBManager
             myDBManager = new MyDBManager(this.context);
         }
     }*/
+
+
 }

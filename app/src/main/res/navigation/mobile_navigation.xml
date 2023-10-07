@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/navigation_tasks"
-        android:name="com.konstantin_romashenko.todolist.ui.tasks.TasksFragment"
+        android:name="com.konstantin_romashenko.todolist.ui.tasks.TasksFragmentDrawable"
         android:label="@string/title_tasks"
-        tools:layout="@layout/fragment_tasks" />
+        tools:layout="@layout/fragment_tasks_drawable" />
 
     <fragment
         android:id="@+id/navigation_calendar"

@@ -45,8 +45,8 @@ public class CalendarArrayAdapter extends RecyclerView.Adapter<CalendarArrayAdap
     }
     @NonNull
     @Override
-    public TaskHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
+    public TaskHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_view_item, parent, false);
 
@@ -114,7 +114,8 @@ public class CalendarArrayAdapter extends RecyclerView.Adapter<CalendarArrayAdap
 
 
     @Override
-    public int getItemCount() {
+    public int getItemCount()
+    {
         return taskItems.size();
     }
 

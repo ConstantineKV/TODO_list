@@ -11,6 +11,8 @@ public class TasksGroup
     private List<TaskItemClass> taskItems;
     private TasksCommon.TaskType groupType;
 
+    private boolean expanded;
+
     TasksGroup(TasksCommon.TaskType taskType, List<TaskItemClass> taskItems)
     {
         this.groupType = taskType;
@@ -36,4 +38,13 @@ public class TasksGroup
         this.groupType = groupType;
     }
 
+    public boolean isExpanded()
+    {
+        return expanded;
+    }
+
+    public void setExpanded(boolean expanded)
+    {
+        this.expanded = expanded;
+    }
 }

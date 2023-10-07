@@ -56,7 +56,6 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
         bottomSheetDialog.setTitle("New task");
         bottomSheetDialog.setContentView(R.layout.new_task_layout);
         taskItem = new TaskItemClass();
-        int test = R.id.fbAddTask;
 
     }
 
@@ -92,6 +91,9 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
         llDate.setOnClickListener(this);
         llTime.setOnClickListener(this);
 
+        Calendar date = Calendar.getInstance();
+        taskItem.setDate(date);
+        tvDateValue.setText(String.format("%s-%s-%s", date.get(Calendar.YEAR), date.get(Calendar.MONTH) + 1, date.get(Calendar.DAY_OF_MONTH)));
 
         WindowManager.LayoutParams p = getDialog().getWindow().getAttributes();
         p.width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -143,7 +145,7 @@ public class TaskAddDialog extends DialogFragment implements View.OnClickListene
     
     public void onClickDateChoose()
     {
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar = taskItem.getDate();
         datePickerDialog = new DatePickerDialog(getContext(),
                 this,
                 calendar.get(Calendar.YEAR),

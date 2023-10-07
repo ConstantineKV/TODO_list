@@ -24,65 +24,62 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.konstantin_romashenko.todolist.R;
-import com.konstantin_romashenko.todolist.databinding.FragmentTasksBinding;
-
+import com.konstantin_romashenko.todolist.databinding.FragmentTasksDrawableBinding;
 import com.konstantin_romashenko.todolist.ui.common.TasksCommon;
 import com.konstantin_romashenko.todolist.ui.db.MyDBManager;
 import com.konstantin_romashenko.todolist.ui.dialog.TaskAddDialog;
-
-import org.jetbrains.annotations.NotNull;
-import com.konstantin_romashenko.todolist.ui.tasks.listeners.TaskClickListener;
+import com.konstantin_romashenko.todolist.ui.tasks.callbacks.ItemTouchHelperCallback;
 import com.konstantin_romashenko.todolist.ui.tasks.listeners.TaskAddListener;
+import com.konstantin_romashenko.todolist.ui.tasks.listeners.TaskClickListener;
 import com.konstantin_romashenko.todolist.ui.tasks.listeners.TaskDragListener;
 import com.konstantin_romashenko.todolist.ui.tasks.listeners.TaskTreatmentListenerImpl;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
+import kotlinx.coroutines.scheduling.Task;
 
-public class TasksFragment extends Fragment implements View.OnClickListener, TaskClickListener, TaskAddListener, Serializable
+
+public class TasksFragmentDrawable extends Fragment implements View.OnClickListener, TaskClickListener, TaskAddListener, TaskDragListener, Serializable
 {
 
     private TasksViewModel tasksViewModel;
     private TaskClickListener taskClickListener;
-    private FragmentTasksBinding binding;
+    private FragmentTasksDrawableBinding binding;
     private ExpandableListView tasksExpandableListView;
-
+    private RecyclerView tasksRecyclerListView;
     ArrayList<TaskItemClass> previousTasks;
     ArrayList<TaskItemClass> todayTasks;
     ArrayList<TaskItemClass> futureTasks;
     ArrayList<TaskItemClass> doneTasks;
-    private TasksArrayAdapterExpandable tasksAdapter;
+
+    private TasksArrayAdapterRecycler tasksAdapter;
     private MyDBManager myDB;
     private FloatingActionButton floatingActionButton;
-    private Dialog dialog;
-    private BottomSheetDialog bottomDialog;
     private TaskAddDialog taskAddDialog;
 
     private ArrayList<TaskItemClass> tasks;
-    private Vector<TasksGroup> tasksByGroups = new Vector<TasksGroup>();
+    private Map<TasksCommon.TaskType, TasksGroup> tasksByGroups = new LinkedHashMap<>();
     private TaskTreatmentListenerImpl taskTreatmentListener;
-    public boolean[] expanded;
     private Handler handler = new Handler(Looper.getMainLooper());
 
-    class GroupExpandedInfo
-    {
-        public boolean expanded = false;
-        public TasksCommon.TaskType taskType = TasksCommon.TaskType.PREVIOUS;
-    };
     ActivityResultLauncher<Intent> mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
                 @Override
@@ -121,7 +118,7 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
     {
         tasksViewModel = new ViewModelProvider(this).get(TasksViewModel.class);
 
-        binding = FragmentTasksBinding.inflate(inflater, container, false);
+        binding = FragmentTasksDrawableBinding.inflate(inflater, container, false);
 
         View root = binding.getRoot();
         taskTreatmentListener = new TaskTreatmentListenerImpl(this);
@@ -133,36 +130,26 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
     {
         super.onViewCreated(view, savedInstanceState);
 
-        tasksExpandableListView = getView().findViewById(R.id.elvTasks);
+        tasksRecyclerListView = getView().findViewById(R.id.rvTasks);
         floatingActionButton = getView().findViewById(R.id.abCreateTask);
         floatingActionButton.setOnClickListener(this);
 
-        tasksAdapter = new TasksArrayAdapterExpandable(getActivity().getApplicationContext(), getLayoutInflater(), this);
+        tasksRecyclerListView.setLayoutManager(new LinearLayoutManager(getContext()));
+        tasksAdapter = new TasksArrayAdapterRecycler(getActivity().getApplicationContext(), getLayoutInflater(), this, this);
 
+        ItemTouchHelper.Callback callback = new ItemTouchHelperCallback(tasksAdapter);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(tasksRecyclerListView);
+
+        Map<TasksCommon.TaskType, Boolean> expanded = new LinkedHashMap<>();
+        expanded.put(TasksCommon.TaskType.TODAY, true);
+        expanded.put(TasksCommon.TaskType.FUTURE, true);
+        setExpanded(expanded);
+        tasksRecyclerListView.setAdapter(tasksAdapter);
         myDB = new MyDBManager(getActivity().getApplicationContext());
         myDB.openDB();
 
-        refreshDataFromDbWithCheckingOldTasks();
-
-        int todayGroupIndex = -1;
-        int futureGroupIndex = -1;
-
-        for (int i = 0; i < tasksByGroups.size(); ++i)
-        {
-            TasksGroup tasksGroup = tasksByGroups.get(i);
-
-            if (tasksGroup.getGroupType() == TasksCommon.TaskType.TODAY)
-                todayGroupIndex = i;
-            if (tasksGroup.getGroupType() == TasksCommon.TaskType.FUTURE)
-                futureGroupIndex = i;
-        }
-
-
-        if (todayGroupIndex != -1)
-            tasksExpandableListView.expandGroup(todayGroupIndex);
-
-        if (futureGroupIndex != -1)
-            tasksExpandableListView.expandGroup(futureGroupIndex);
+        refreshDataFromDbFirstTime();
     }
 
     void refreshDataFromDb()
@@ -170,16 +157,20 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
         tasks = getDataFromDb();
         correctPositionInList(tasks);
         updateDataInDb();
-        refreshExpandableView(tasks);
+        refreshRecyclerView(tasks, getExpanded(tasksByGroups.size()));
     }
 
-    void refreshDataFromDbWithCheckingOldTasks()
+    void refreshDataFromDbFirstTime()
     {
         tasks = getDataFromDb();
         checkOldTasks();
         correctPositionInList(tasks);
         updateDataInDb();
-        refreshExpandableView(tasks);
+
+        Map<TasksCommon.TaskType, Boolean> expanded = new LinkedHashMap<>();
+        expanded.put(TasksCommon.TaskType.TODAY, true);
+        expanded.put(TasksCommon.TaskType.FUTURE, true);
+        refreshRecyclerView(tasks, expanded);
     }
     void checkOldTasks()
     {
@@ -202,6 +193,33 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
     {
         sortTasks(tasks);
 
+        TaskItemClass previousTask = null;
+        for (TaskItemClass task : tasks)
+        {
+            if (task.status == true)
+            {
+                task.positionInList = 99999;
+            }
+            else
+            {
+                if (previousTask == null)
+                    task.setPositionInList(1);
+                else
+                {
+                    Calendar previousTaskDate = previousTask.getDate() != null? previousTask.getDate() : Calendar.getInstance();
+                    Calendar currentTaskDate = task.getDate() != null? task.getDate() : Calendar.getInstance();
+                    if (!equalOnlyDate(previousTaskDate, currentTaskDate))
+                        task.setPositionInList(1);
+                    else
+                        task.setPositionInList(previousTask.getPositionInList() + 1);
+                }
+                previousTask = task;
+            }
+        }
+    }
+
+    void correctPositionInListWithoutSort(List<TaskItemClass> tasks)
+    {
         TaskItemClass previousTask = null;
         for (TaskItemClass task : tasks)
         {
@@ -259,51 +277,39 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
             throw new RuntimeException(e);
         }
     }
-    void refreshExpandableView(ArrayList<TaskItemClass> tasks)
+    void refreshRecyclerView(ArrayList<TaskItemClass> tasks, Map<TasksCommon.TaskType, Boolean> expanded)
     {
         if (tasksAdapter != null)
         {
-            GroupExpandedInfo[] expanded = getExpanded(tasksByGroups.size());
             tasksToGroups(tasks, tasksByGroups);
-            tasksAdapter.updateAdapter(tasksByGroups);
-            tasksExpandableListView.setAdapter(tasksAdapter);
             setExpanded(expanded);
+            tasksAdapter.updateAdapter(tasksByGroups);
+            tasksRecyclerListView.setAdapter(tasksAdapter);
         }
-
     }
 
-    GroupExpandedInfo[] getExpanded(int groupsCount)
+    Map<TasksCommon.TaskType, Boolean> getExpanded(int groupsCount)
     {
-        GroupExpandedInfo[] expanded = new GroupExpandedInfo[groupsCount];
-        for (int i = 0; i < groupsCount; ++i)
+        Map<TasksCommon.TaskType, Boolean> expanded = new LinkedHashMap<>();
+        for (TasksGroup taskGroup : tasksByGroups.values())
         {
-            expanded[i] = new GroupExpandedInfo();
-            expanded[i].expanded = tasksExpandableListView.isGroupExpanded(i);
-            expanded[i].taskType = tasksByGroups.get(i).getGroupType();
+            expanded.put(taskGroup.getGroupType(), taskGroup.isExpanded());
         }
         return expanded;
     }
 
-    void setExpanded(GroupExpandedInfo[] expanded)
+    void setExpanded(Map<TasksCommon.TaskType, Boolean> expanded)
     {
-        for (int i = 0; i < tasksByGroups.size(); ++i)
+        for (TasksCommon.TaskType taskType : expanded.keySet())
         {
-            if (isGroupShouldBeExpanded(tasksByGroups.get(i), expanded))
-                tasksExpandableListView.expandGroup(i);
+            TasksGroup taskGroup = tasksByGroups.get(taskType);
+            if (taskGroup != null)
+            {
+                taskGroup.setExpanded(expanded.get(taskType));
+            }
         }
     }
 
-    boolean isGroupShouldBeExpanded(TasksGroup tasksGroup, GroupExpandedInfo[] expanded)
-    {
-        for (GroupExpandedInfo info : expanded)
-        {
-            if (tasksGroup.getGroupType() == info.taskType)
-            {
-                return info.expanded;
-            }
-        }
-        return false;
-    }
 
     @Override
     public void onDestroyView()
@@ -314,12 +320,13 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
     }
 
     @Override
-    public void onPause() {
+    public void onPause()
+    {
         super.onPause();
 
     }
 
-    public void tasksToGroups(ArrayList<TaskItemClass> taskItems, Vector<TasksGroup> tasksByGroups)
+    public void tasksToGroups(ArrayList<TaskItemClass> taskItems, Map<TasksCommon.TaskType, TasksGroup> tasksByGroups )
     {
         Map<TasksCommon.TaskType, List<TaskItemClass>> tasksByGroupsMap = new HashMap<>();
 
@@ -336,15 +343,30 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
             Calendar currentDate = Calendar.getInstance();
 
             if (task.status)
+            {
+                task.setTaskType(TasksCommon.TaskType.DONE);
                 tasksByGroupsMap.get(TasksCommon.TaskType.DONE).add(task);
+            }
             else if (task.getDate() == null)
+            {
+                task.setTaskType(TasksCommon.TaskType.TODAY);
                 tasksByGroupsMap.get(TasksCommon.TaskType.TODAY).add(task);
+            }
             else if (equalOnlyDate(currentDate, task.getDate()))
+            {
+                task.setTaskType(TasksCommon.TaskType.TODAY);
                 tasksByGroupsMap.get(TasksCommon.TaskType.TODAY).add(task);
+            }
             else if (currentDate.getTime().after(task.getDate().getTime()))
+            {
+                task.setTaskType(TasksCommon.TaskType.PREVIOUS);
                 tasksByGroupsMap.get(TasksCommon.TaskType.PREVIOUS).add(task);
+            }
             else if (currentDate.getTime().before(task.getDate().getTime()))
+            {
+                task.setTaskType(TasksCommon.TaskType.FUTURE);
                 tasksByGroupsMap.get(TasksCommon.TaskType.FUTURE).add(task);
+            }
         }
 
         checkAndSortTasks(tasksByGroupsMap, TasksCommon.TaskType.PREVIOUS);
@@ -354,13 +376,17 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
 
         tasksByGroups.clear();
         if (!tasksByGroupsMap.get(TasksCommon.TaskType.PREVIOUS).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.PREVIOUS, tasksByGroupsMap.get(TasksCommon.TaskType.PREVIOUS)));
+            tasksByGroups.put(TasksCommon.TaskType.PREVIOUS,
+                    new TasksGroup(TasksCommon.TaskType.PREVIOUS, tasksByGroupsMap.get(TasksCommon.TaskType.PREVIOUS)));
         if (!tasksByGroupsMap.get(TasksCommon.TaskType.TODAY).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.TODAY, tasksByGroupsMap.get(TasksCommon.TaskType.TODAY)));
+            tasksByGroups.put(TasksCommon.TaskType.TODAY,
+                    new TasksGroup(TasksCommon.TaskType.TODAY, tasksByGroupsMap.get(TasksCommon.TaskType.TODAY)));
         if (!tasksByGroupsMap.get(TasksCommon.TaskType.FUTURE).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.FUTURE, tasksByGroupsMap.get(TasksCommon.TaskType.FUTURE)));
+            tasksByGroups.put(TasksCommon.TaskType.FUTURE,
+                    new TasksGroup(TasksCommon.TaskType.FUTURE, tasksByGroupsMap.get(TasksCommon.TaskType.FUTURE)));
         if (!tasksByGroupsMap.get(TasksCommon.TaskType.DONE).isEmpty())
-            tasksByGroups.add(new TasksGroup(TasksCommon.TaskType.DONE, tasksByGroupsMap.get(TasksCommon.TaskType.DONE)));
+            tasksByGroups.put(TasksCommon.TaskType.DONE,
+                    new TasksGroup(TasksCommon.TaskType.DONE, tasksByGroupsMap.get(TasksCommon.TaskType.DONE)));
 
     }
 
@@ -451,10 +477,28 @@ public class TasksFragment extends Fragment implements View.OnClickListener, Tas
         refreshDataFromDb();
     }
 
+    @Override
+    public void onDragFinished() throws ParseException {
+        tasksByGroups = tasksAdapter.getTasksByGroups();
+        for (TasksGroup group : tasksByGroups.values())
+        {
+            correctPositionInListWithoutSort(group.getTaskItems());
+        }
+
+        ArrayList<TaskItemClass> tasksToUpdateInDb = new ArrayList<>();
+        for (TasksGroup group : tasksByGroups.values())
+        {
+            tasksToUpdateInDb.addAll(group.getTaskItems());
+        }
+
+        myDB.updateAllInDb(tasksToUpdateInDb);
+        refreshDataFromDb();
+    }
+
     class TaskCheckedDaemon implements Runnable
     {
-        TasksFragment tasksFragment;
-        TaskCheckedDaemon(TasksFragment tasksFragment)
+        TasksFragmentDrawable tasksFragment;
+        TaskCheckedDaemon(TasksFragmentDrawable tasksFragment)
         {
             super();
             this.tasksFragment = tasksFragment;
